@@ -1,0 +1,91 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RTC Class Schedule",
+    "version": "1.0.0",
+    "description": "Fetch RTC class schedule by term, subject, or campus"
+  },
+  "x-openai-is_user_authenticated": false,
+  "x-openai-plugin": {
+    "schema_version": "v1",
+    "name_for_model": "classes_sbctc_edu__jit_plugin",
+    "name_for_human": "RTC Class Schedule",
+    "description_for_model": "Access RTC course schedules by term, subject, and campus.",
+    "description_for_human": "Query course listings at RTC by quarter, department, and more.",
+    "api": {
+      "type": "openapi",
+      "url": "https://citl-dev-ops.github.io/rtc-openapi/ctclink_schedule_plugin_openapi.json"
+    },
+    "auth": {
+      "type": "none"
+    }
+  },
+  "paths": {
+    "/fetchSchedule": {
+      "post": {
+        "summary": "Fetch class schedule by term or subject",
+        "operationId": "fetchSchedule",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "term": {
+                    "type": "string",
+                    "description": "Quarter code (e.g., '2253' for Spring 2025)"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "description": "Course subject abbreviation (e.g., 'ENGL')"
+                  },
+                  "campus": {
+                    "type": "string",
+                    "description": "Campus ID (optional)"
+                  }
+                },
+                "required": ["term"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of matching classes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClassItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClassItem": {
+        "type": "object",
+        "properties": {
+          "subject": { "type": "string" },
+          "catalogNbr": { "type": "string" },
+          "courseTitle": { "type": "string" },
+          "classNbr": { "type": "string" },
+          "campus": { "type": "string" },
+          "instructionMode": { "type": "string" },
+          "startDate": { "type": "string" },
+          "endDate": { "type": "string" },
+          "meetingPattern": { "type": "string" },
+          "instructor": { "type": "string" },
+          "units": { "type": "string" }
+        }
+      }
+    }
+  }
+}
