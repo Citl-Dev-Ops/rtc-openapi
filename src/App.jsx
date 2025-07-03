@@ -1,64 +1,59 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
-export default function RTCChatApp() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function App() {
+  const [term, setTerm] = useState('');
+  const [subject, setSubject] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleSend = async () => {
-    const newMessages = [...messages, { role: 'user', content: input }];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setResult(null);
     try {
-      const completion = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-4o',
-          messages: [
-            { role: 'system', content: 'You are RTC Advising GPT. Answer using the latest RTC class data.' },
-            ...newMessages
-          ]
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      const gptReply = completion.data.choices[0].message.content;
-      setMessages([...newMessages, { role: 'assistant', content: gptReply }]);
+      const response = await fetch('/api/fetchSchedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ term, subject })
+      });
+      if (!response.ok) {
+        throw new Error('API error');
+      }
+      const data = await response.json();
+      setResult(data);
     } catch (err) {
-      setMessages([...newMessages, { role: 'assistant', content: 'Error fetching GPT reply.' }]);
-    } finally {
-      setLoading(false);
+      setError('Error fetching data: ' + err.message);
     }
   };
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
+    <div className="p-4 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4">RTC Class Advisor</h1>
-      <div className="border rounded p-4 h-96 overflow-y-auto mb-4 bg-white">
-        {messages.map((msg, i) => (
-          <div key={i} className={`mb-2 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-            <p><strong>{msg.role === 'user' ? 'You' : 'Advisor'}:</strong> {msg.content}</p>
-          </div>
-        ))}
-        {loading && <p><em>Advisor is typing...</em></p>}
-      </div>
-      <input
-        className="border rounded p-2 w-full mb-2"
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        placeholder="Ask about classes, dates, or instructors..."
-      />
-      <button className="bg-blue-600 text-white py-2 px-4 rounded" onClick={handleSend} disabled={loading}>
-        Send
-      </button>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Enter Term (e.g. 2253)"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          className="border p-2 rounded w-full mb-2"
+        />
+        <input
+          type="text"
+          placeholder="Enter Subject (optional)"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          className="border p-2 rounded w-full mb-2"
+        />
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+          Fetch Classes
+        </button>
+      </form>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {result && (
+        <pre className="bg-gray-100 p-2 rounded mt-4">
+          {JSON.stringify(result, null, 2)}
+        </pre>
+      )}
     </div>
   );
 }
