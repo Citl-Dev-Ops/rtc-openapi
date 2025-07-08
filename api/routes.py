@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from term_code_utils import get_term_code_from_text
+from fetchSchedule import fetch_bp
+app.register_blueprint(fetch_bp)
 
 app = Flask(__name__)
 
