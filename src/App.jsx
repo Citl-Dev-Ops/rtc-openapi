@@ -1,59 +1,44 @@
 import React, { useState } from 'react';
+import TermInput from './components/TermInput';
 
-export default function App() {
-  const [term, setTerm] = useState('');
-  const [subject, setSubject] = useState('');
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
+function App() {
+  const [results, setResults] = useState([]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setResult(null);
-    try {
-      const response = await fetch('/api/fetchSchedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ term, subject })
-      });
-      if (!response.ok) {
-        throw new Error('API error');
-      }
-      const data = await response.json();
-      setResult(data);
-    } catch (err) {
-      setError('Error fetching data: ' + err.message);
+  const fetchClasses = async ({ term, subject }) => {
+    const response = await fetch('https://classes.sbctc.edu/api/Schedule/Search', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ term, subject })
+    });
+
+    if (!response.ok) {
+      alert("Failed to fetch classes. Check the term or subject.");
+      return;
     }
+
+    const data = await response.json();
+    setResults(data.data || []);
   };
 
   return (
-    <div className="p-4 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-4">RTC Class Advisor</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Enter Term (e.g. 2253)"
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          className="border p-2 rounded w-full mb-2"
-        />
-        <input
-          type="text"
-          placeholder="Enter Subject (optional)"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="border p-2 rounded w-full mb-2"
-        />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Fetch Classes
-        </button>
-      </form>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      {result && (
-        <pre className="bg-gray-100 p-2 rounded mt-4">
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
+    <div>
+      <h1>RTC Class Schedule</h1>
+      <TermInput onSearch={fetchClasses} />
+      <ul>
+        {results.map((course, idx) => (
+          <li key={idx}>
+            <strong>{course.subject} {course.catalogNbr} – {course.courseTitle}</strong><br />
+            Instructor: {course.instructor}<br />
+            {course.units} units | {course.instructionMode}<br />
+            {course.startDate} to {course.endDate}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
+
+export default App;
