@@ -2,6 +2,7 @@
 
 from datetime import datetime
 year = datetime.now().year
+month = datetime.now().month
 
 def get_term_code_from_text(term_input: str) -> str:
     month_to_code = {
