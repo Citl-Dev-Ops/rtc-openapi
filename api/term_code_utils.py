@@ -28,16 +28,28 @@ def get_term_code_from_text(term_input: str) -> str:
 
     return infer_next_term_code(now)
 
-def infer_next_term_code(current: datetime) -> str:
-    m = current.month
-    y = current.year
-    short_year = str(y)[-2:]
+def get_term_code_from_text(text):
+    text = text.lower()
+    year = datetime.datetime.now().year
+    month = datetime.datetime.now().month
 
-    if m <= 2:
-        return f"{short_year}51"
-    elif m <= 5:
-        return f"{short_year}53"
-    elif m <= 8:
-        return f"{short_year}55"
+    # Handle keyword-based conversion
+    if "winter" in text:
+        return f"{str(year)[-2:]}51"
+    elif "spring" in text:
+        return f"{str(year)[-2:]}53"
+    elif "summer" in text:
+        return f"{str(year)[-2:]}55"
+    elif "fall" in text:
+        return f"{str(year)[-2:]}57"
+    elif "next" in text or "upcoming" in text:
+        if month < 3:
+            return f"{str(year)[-2:]}51"
+        elif month < 6:
+            return f"{str(year)[-2:]}53"
+        elif month < 9:
+            return f"{str(year)[-2:]}55"
+        else:
+            return f"{str(year)[-2:]}57"
     else:
-        return f"{short_year}57"
+        return "UNKNOWN"
