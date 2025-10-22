@@ -1,42 +1,41 @@
 import React, { useState } from 'react';
 
+// Minimal season->term code helper for demo (adjust as you like)
+function toTermCode(input) {
+  const text = (input || '').trim().toLowerCase();
+  const now = new Date();
+  const year2 = String(now.getFullYear()).slice(-2);
+
+  const map = { winter: '51', spring: '53', summer: '54', fall: '55' };
+  if (map[text]) return `${year2}${map[text]}`;
+
+  // already numeric like 2254
+  if (/^\d{4}$/.test(text)) return text;
+
+  return ''; // let backend/UX handle empty
+}
+
 export default function TermInput({ onSearch }) {
   const [termText, setTermText] = useState('');
   const [subject, setSubject] = useState('');
 
-  const handleSubmit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
-
-    // Convert natural language to term code
-    const convertRes = await fetch('/api/term/convert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term_text: termText })
-    });
-
-    const convertData = await convertRes.json();
-    const termCode = convertData.term_code;
-
-    if (!termCode || termCode === "UNKNOWN") {
-      alert("Sorry, we couldn't determine the academic term. Try 'Spring 2025' or 'next quarter'.");
-      return;
-    }
-
-    // Pass full query to parent (App.jsx or wherever logic runs)
-    onSearch({ term: termCode, subject });
+    const term = toTermCode(termText);
+    onSearch({ term, subject });
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={submit}>
       <input
-        placeholder="Enter Term (e.g. Spring 2025 or next quarter)"
+        placeholder="Type: Fall, Winter, Spring, Summer or 4-digit code (e.g., 2254)"
         value={termText}
-        onChange={(e) => setTermText(e.target.value)}
+        onChange={e => setTermText(e.target.value)}
       />
       <input
-        placeholder="Enter Subject (optional)"
+        placeholder="Enter Subject (optional, e.g., ENGL)"
         value={subject}
-        onChange={(e) => setSubject(e.target.value)}
+        onChange={e => setSubject(e.target.value)}
       />
       <button type="submit">Fetch Classes</button>
     </form>
