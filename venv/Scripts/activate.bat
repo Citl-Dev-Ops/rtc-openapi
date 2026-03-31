@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\armcdowell\OneDrive - Renton Technical College\Documents\GitHub\rtc-openapi\venv
+set VIRTUAL_ENV=C:\00 HENOSIS CODING PROJECTS\CITL PROJECTS\rtc-openapi\venv
 
 if not defined PROMPT set PROMPT=$P$G
 
